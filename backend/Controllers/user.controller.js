@@ -2,7 +2,7 @@ const { validationResult } = require('express-validator');
 const User = require('../Models/user.js');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
-const { sendEmailVerificationEmail } = require('../utils/emailService');
+const { sendEmailVerificationEmail } = require('../Utils/emailService');
 
 // Register user
 exports.registerUser = async (req, res, next) => {
