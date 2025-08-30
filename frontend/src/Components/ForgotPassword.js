@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./LoginPage.css"; // Using the same CSS as LoginPage
+import "./LoginPage.css";
 
 const API_BASE = process.env.REACT_APP_API_BASE;
 
@@ -34,7 +34,6 @@ const ForgotPassword = () => {
       if (data.success) {
         setIsSuccess(true);
         setMessage(data.message);
-        // Redirect to reset password page after 3 seconds
         setTimeout(() => {
           navigate("/reset-password");
         }, 3000);
@@ -52,7 +51,6 @@ const ForgotPassword = () => {
 
   return (
     <div className="login-page sunburst-bg">
-      {/* Sunburst decorations */}
       <div>
         <img 
           src="https://res.cloudinary.com/djdcwwpbl/image/upload/v1754413839/Screenshot_2025-08-05_224001_xuu1go.png" 
@@ -72,7 +70,7 @@ const ForgotPassword = () => {
         <div className="login-form-section">
           <div className="institution-logo">
             <img 
-              src="odoologo" 
+              src="https://res.cloudinary.com/drr1vc8fd/image/upload/v1756541360/favpng_5276fa520b56c455881b4dbef71a90dc_eljvsp.png" 
               alt="Logo" 
               className="logo-image" 
             />
@@ -121,7 +119,6 @@ const ForgotPassword = () => {
             </button>
           </form>
 
-          {/* Back to login link */}
           <div className="register-link-bottom">
             <span>Remember your password?</span>
             <span 

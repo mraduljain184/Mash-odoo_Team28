@@ -50,7 +50,6 @@ const RegisterPage = () => {
 
   return (
     <div className="login-page sunburst-bg">
-      {/* Sunburst decorations (reuse same assets as login) */}
       <div>
         <img src="https://res.cloudinary.com/djdcwwpbl/image/upload/v1754413839/Screenshot_2025-08-05_224001_xuu1go.png" alt="Decoration" className="sunburst" />
       </div>
@@ -61,7 +60,7 @@ const RegisterPage = () => {
       <div className="login-container">
         <div className="login-form-section">
           <div className="institution-logo">
-            <img src="odoologo" alt="Institution Logo" className="logo-image" />
+            <img src="https://res.cloudinary.com/drr1vc8fd/image/upload/v1756541360/favpng_5276fa520b56c455881b4dbef71a90dc_eljvsp.png" alt="Institution Logo" className="logo-image" />
           </div>
           <h1 className="login-title">Register</h1>
           <form onSubmit={handleRegister} className="login-form">
