@@ -13,6 +13,7 @@ const ServiceSchema = new mongoose.Schema({
     type: { type: String, enum: ['Point'], default: 'Point' },
     coordinates: { type: [Number] }, // [lng, lat]
   },
+  status: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending', required: true },
   createdAt: { type: Date, default: Date.now },
 });
 
