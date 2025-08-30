@@ -3,8 +3,10 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { validationResult } = require('express-validator');
 const User = require('../Models/user');
-
 const { sendResetPasswordEmail } = require('../Utils/emailService');
+// Add new models
+const Admin = require('../Models/admin');
+const Worker = require('../Models/worker');
 
 // Token validation endpoint
 exports.validateToken = async (req, res, next) => {
@@ -16,15 +18,30 @@ exports.validateToken = async (req, res, next) => {
     const token = authHeader.replace('Bearer ', '');
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Admin tokens
     if (decoded.role === 'admin') {
-      return res.json({ success: true, data: { role: 'admin', username: decoded.username || 'admin' } });
+      const admin = await Admin.findOne({ username: decoded.username?.toLowerCase?.() || decoded.username });
+      if (!admin) return res.status(401).json({ success: false, message: 'Invalid token admin' });
+      return res.json({ success: true, data: { role: 'admin', username: admin.username } });
     }
 
-    // User / Worker tokens
+    if (decoded.role === 'worker') {
+      let worker = await Worker.findById(decoded.id);
+      if (!worker) {
+        // fallback to legacy worker stored in User collection
+        const legacy = await User.findById(decoded.id);
+        if (legacy && legacy.role === 'worker') {
+          return res.json({ success: true, data: { id: legacy._id, name: legacy.name, role: 'worker', email: legacy.email } });
+        }
+        return res.status(401).json({ success: false, message: 'Invalid token user' });
+      }
+      return res.json({ success: true, data: { id: worker._id, name: worker.name, role: 'worker', email: worker.email } });
+    }
+
+    // Default to end user
     const user = await User.findById(decoded.id);
     if (!user) return res.status(401).json({ success: false, message: 'Invalid token user' });
-    return res.json({ success: true, data: { id: user._id, name: user.name, role: user.role, email: user.email } });
+    // if legacy token had worker but token says user, still return user.role for safety
+    return res.json({ success: true, data: { id: user._id, name: user.name, role: user.role || 'user', email: user.email } });
   } catch (err) {
     res.status(401).json({ success: false, message: 'Invalid or expired token' });
   }
@@ -35,20 +52,32 @@ exports.userLogin = async (req, res, next) => {
   if (!errors.isEmpty()) return res.status(400).json({ success: false, message: 'Invalid input', errors: errors.array() });
   try {
     const email = (req.body.email || '').toLowerCase();
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ success: false, message: 'Invalid credentials' });
-    if (!user.isVerified) return res.status(403).json({ success: false, message: 'Email not verified. Please verify your email before logging in.' });
-    const isMatch = await bcrypt.compare(req.body.password, user.password);
+
+    let account = await Worker.findOne({ email });
+    let role = 'worker';
+
+    if (!account) {
+      account = await User.findOne({ email });
+      // respect role from legacy user collection
+      role = account && account.role === 'worker' ? 'worker' : 'user';
+    }
+
+    if (!account) return res.status(400).json({ success: false, message: 'Invalid credentials' });
+    if (!account.isVerified) return res.status(403).json({ success: false, message: 'Email not verified. Please verify your email before logging in.' });
+
+    const isMatch = await bcrypt.compare(req.body.password, account.password);
     if (!isMatch) return res.status(400).json({ success: false, message: 'Invalid credentials' });
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '2h' });
-    console.log(`User logged in: ${user.email} (${user.name}) role=${user.role} at ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`);
+
+    const token = jwt.sign({ id: account._id, role }, process.env.JWT_SECRET, { expiresIn: '2h' });
+    console.log(`User logged in: ${account.email} (${account.name}) role=${role} at ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`);
+
     res.json({
       success: true,
       token,
       data: {
-        id: user._id,
-        name: user.name,
-        role: user.role
+        id: account._id,
+        name: account.name,
+        role
       }
     });
   } catch (err) {
@@ -56,20 +85,22 @@ exports.userLogin = async (req, res, next) => {
   }
 };
 
-// Admin login via environment credentials
+// Admin login via MongoDB Admin collection
 exports.adminLogin = async (req, res, next) => {
   try {
     const { username, password } = req.body || {};
-    const adminUser = process.env.ADMIN_USERNAME;
-    const adminPass = process.env.ADMIN_PASSWORD;
-    if (!adminUser || !adminPass) {
-      return res.status(500).json({ success: false, message: 'Admin credentials not configured' });
-    }
-    if (username !== adminUser || password !== adminPass) {
+    const uname = (username || '').toLowerCase();
+
+    const admin = await Admin.findOne({ username: uname, isActive: true });
+    if (!admin) {
       return res.status(400).json({ success: false, message: 'Invalid credentials' });
     }
-    const token = jwt.sign({ role: 'admin', username: adminUser }, process.env.JWT_SECRET, { expiresIn: '2h' });
-    return res.json({ success: true, token, data: { role: 'admin', username: adminUser } });
+
+    const passOk = await bcrypt.compare(password || '', admin.password);
+    if (!passOk) return res.status(400).json({ success: false, message: 'Invalid credentials' });
+
+    const token = jwt.sign({ role: 'admin', username: admin.username }, process.env.JWT_SECRET, { expiresIn: '2h' });
+    return res.json({ success: true, token, data: { role: 'admin', username: admin.username } });
   } catch (err) {
     next(err);
   }
@@ -82,17 +113,26 @@ exports.forgotPassword = async (req, res, next) => {
   
   try {
     const { email } = req.body;
-    const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) {
+    const lower = (email || '').toLowerCase();
+
+    // Look in both collections
+    let account = await User.findOne({ email: lower });
+    let collection = 'user';
+    if (!account) {
+      account = await Worker.findOne({ email: lower });
+      collection = 'worker';
+    }
+
+    if (!account) {
       return res.status(404).json({ success: false, message: 'No account found with this email address' });
     }
 
     const resetToken = Math.floor(100000 + Math.random() * 900000).toString();
-    user.resetPasswordToken = resetToken;
-    user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000);
-    await user.save();
+    account.resetPasswordToken = resetToken;
+    account.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000);
+    await account.save();
 
-    const emailResult = await sendResetPasswordEmail(user.email, resetToken);
+    const emailResult = await sendResetPasswordEmail(account.email, resetToken);
     
     if (!emailResult.success) {
       return res.status(500).json({ success: false, message: 'Failed to send reset email. Please try again.' });
@@ -139,23 +179,31 @@ exports.resetPassword = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Passwords do not match' });
     }
 
-    const user = await User.findOne({
+    // Check both collections
+    let account = await User.findOne({
       resetPasswordToken: token,
       resetPasswordExpires: { $gt: new Date() }
     });
 
-    if (!user) {
+    if (!account) {
+      account = await Worker.findOne({
+        resetPasswordToken: token,
+        resetPasswordExpires: { $gt: new Date() }
+      });
+    }
+
+    if (!account) {
       return res.status(400).json({ success: false, message: 'Invalid or expired reset token' });
     }
 
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
 
-    user.password = hashedPassword;
-    user.resetPasswordToken = null;
-    user.resetPasswordExpires = null;
+    account.password = hashedPassword;
+    account.resetPasswordToken = null;
+    account.resetPasswordExpires = null;
 
-    await user.save();
+    await account.save();
 
     res.json({
       success: true,
