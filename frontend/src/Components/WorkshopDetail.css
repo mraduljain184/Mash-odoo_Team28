@@ -1,0 +1,36 @@
+:root {}
+
+.wd-root { background:#111; color:#eee; min-height:100vh; }
+.wd-header { display:flex; justify-content:space-between; align-items:center; padding:16px 24px; border-bottom:1px solid #222; position:sticky; top:0; background:#111; z-index:10; }
+.wd-brand { color:#e7f20c; font-weight:700; font-size:20px; }
+.wd-nav a { color:#aaa; margin-right:16px; text-decoration:none; }
+.wd-icon { background:none; border:none; color:#ddd; margin-left:8px; cursor:pointer; }
+
+.wd-main { display:grid; grid-template-columns: 1fr 320px; gap:24px; padding:24px; max-width:1200px; margin:0 auto; }
+
+.wd-title { font-size:28px; letter-spacing:1px; margin:8px 0 12px; }
+.wd-desc { color:#bbb; line-height:1.6; max-width:720px; }
+
+.wd-sub { margin-top:24px; margin-bottom:12px; }
+.wd-services { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:16px; max-width:720px; }
+.wd-service { background:#1b1b1b; border-radius:14px; padding:12px; display:flex; flex-direction:column; align-items:center; border:1px solid #2a2a2a; }
+.wd-service-thumb { width:100%; height:90px; border-radius:10px; background:#2c2c2c; margin-bottom:8px; }
+.wd-service-name { font-size:14px; color:#ddd; }
+
+.wd-reviews { margin-top:32px; background:#171717; border-radius:16px; padding:16px; border:1px solid #2a2a2a; max-width:860px; }
+.wd-rating { color:#ffd04a; margin-bottom:12px; }
+.wd-chat { display:flex; gap:8px; }
+.wd-chat input { flex:1; padding:10px 12px; border-radius:10px; border:1px solid #333; background:#111; color:#eee; }
+.wd-chat button { padding:10px 14px; border-radius:10px; background:#e7f20c; color:#000; border:none; cursor:pointer; }
+
+.wd-right { position:sticky; top:76px; height:fit-content; display:flex; flex-direction:column; gap:16px; }
+.wd-book { padding:12px 16px; background:#e7f20c; color:#000; border-radius:999px; border:none; font-weight:600; cursor:pointer; }
+.wd-location, .wd-owner, .wd-share { background:#171717; border:1px solid #2a2a2a; border-radius:16px; padding:14px; }
+.wd-mini-map { margin-top:8px; }
+.wd-map-loading { color:#aaa; font-size:14px; }
+.wd-socials a { margin-right:8px; color:#ddd; }
+
+@media (max-width: 980px) {
+  .wd-main { grid-template-columns: 1fr; }
+  .wd-right { position:static; }
+}

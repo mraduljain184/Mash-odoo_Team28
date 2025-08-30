@@ -3,6 +3,11 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
+
+// Ensure uploads temp folder exists
+fs.mkdirSync(path.join(__dirname, 'tmp_uploads'), { recursive: true });
 
 
 const errorHandler = require('./Middlewares/errorHandler.middleware.js');
@@ -32,6 +37,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth', require('./Routes/auth.router.js'));
 app.use('/api/user', require('./Routes/user.router.js'));
 app.use('/api/workshops', require('./Routes/workshop.router.js'));
+app.use('/api/services', require('./Routes/service.router.js'));
 
 
 // Error handler LAST

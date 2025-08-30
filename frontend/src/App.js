@@ -6,6 +6,8 @@ import ForgotPassword from "./Components/ForgotPassword";
 import ResetPassword from "./Components/ResetPassword";
 import VerifyEmail from "./Components/VerifyEmail";
 import HomePage from "./Components/HomePage";
+import WorkshopDetail from "./Components/WorkshopDetail";
+import ServiceNew from "./Components/ServiceNew";
 
 
 
@@ -20,6 +22,8 @@ function App() {
     <div className="App">
       <Routes>
         <Route path="/" element={<PrivateRoute><HomePage /></PrivateRoute>} />
+        <Route path="/workshops/:id" element={<PrivateRoute><WorkshopDetail /></PrivateRoute>} />
+        <Route path="/workshops/:id/service/new" element={<PrivateRoute><ServiceNew /></PrivateRoute>} />
         <Route path="/login" element={<LoginPage setUser={setUser} />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />

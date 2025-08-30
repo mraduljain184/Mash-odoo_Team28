@@ -1,0 +1,17 @@
+.sn-root{color:#fff;background:#0e0e0e;min-height:100vh;padding:16px}
+.sn-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sn-title{font-size:22px;font-weight:700}
+.sn-track{border:1px solid #666;background:transparent;color:#fff;border-radius:18px;padding:6px 12px}
+.sn-form{display:grid;grid-template-columns:1fr 320px;gap:20px}
+.sn-left{background:#121212;border:1px solid #2a2a2a;border-radius:16px;padding:16px}
+.sn-right{background:#121212;border:1px solid #2a2a2a;border-radius:16px;padding:16px;height:fit-content}
+.sn-field{display:flex;flex-direction:column;margin-bottom:12px}
+.sn-field>span{opacity:.9;margin-bottom:6px}
+.sn-field input, .sn-field textarea, .sn-field select{background:#171717;border:1px solid #2a2a2a;border-radius:10px;color:#fff;padding:10px}
+.sn-time{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sn-divider{height:1px;background:#2a2a2a;margin:14px 0}
+.sn-chat{background:#5b57ff;border:none;color:#fff;padding:10px 14px;border-radius:10px;margin-top:6px}
+.sn-actions{display:flex;justify-content:center;margin-top:18px}
+.sn-checkout{background:#6b63ff;border:none;color:#fff;padding:10px 20px;border-radius:12px}
+.sn-maplabel{margin-bottom:8px}
+.sn-maploading{background:#171717;border:1px solid #2a2a2a;border-radius:12px;height:180px;display:flex;align-items:center;justify-content:center;color:#aaa}

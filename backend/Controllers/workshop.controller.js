@@ -43,3 +43,25 @@ exports.list = async (req, res, next) => {
     next(err);
   }
 };
+
+// Get full workshop details by id
+exports.get = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { lat, lng } = req.query;
+    const doc = await Workshop.findById(id)
+      .populate({ path: 'owner', select: 'name email phone' })
+      .lean();
+
+    if (!doc) return res.status(404).json({ success: false, message: 'Workshop not found' });
+
+    if (lat && lng && !Number.isNaN(Number(lat)) && !Number.isNaN(Number(lng)) && doc.location?.coordinates) {
+      const userLoc = [Number(lng), Number(lat)];
+      doc.distanceKm = distanceKm(doc.location.coordinates, userLoc);
+    }
+
+    res.json({ success: true, data: doc });
+  } catch (err) {
+    next(err);
+  }
+};

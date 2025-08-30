@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import './HomePage.css';
 import MapSection from './MapViewPage';
+import { useNavigate } from 'react-router-dom';
 
 const API_BASE = process.env.REACT_APP_API_BASE || '';
 
 export default function HomePage() {
+  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [showOpenOnly, setShowOpenOnly] = useState(false);
   const [status, setStatus] = useState('all'); // all | open | closed
@@ -16,6 +18,10 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [userLocation, setUserLocation] = useState(null);
+  const [locationText, setLocationText] = useState('');
+  const [locationCoords, setLocationCoords] = useState(null); // {lat,lng} from text search
+  const [expandedId, setExpandedId] = useState(null);
+  const [detailsCache, setDetailsCache] = useState({}); // id -> details
 
   const radiusValue = useMemo(() => {
     if (distance === 'lt2') return 2;
@@ -32,8 +38,12 @@ export default function HomePage() {
       setLoading(true);
       try {
         let lat, lng;
-        // Attempt geolocation to enable nearby sorting on server
-        if (navigator.geolocation) {
+        // Prefer manual location search
+        if (locationCoords?.lat && locationCoords?.lng) {
+          lat = locationCoords.lat;
+          lng = locationCoords.lng;
+        } else if (navigator.geolocation) {
+          // Attempt geolocation to enable nearby sorting on server
           try {
             const pos = await new Promise((resolve, reject) => navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 8000 }));
             lat = pos.coords.latitude;
@@ -65,7 +75,7 @@ export default function HomePage() {
     }
     run();
     return () => { cancelled = true; };
-  }, [query, status, sortBy, radiusValue]);
+  }, [query, status, sortBy, radiusValue, locationCoords]);
 
   // If permission already granted, capture location on mount
   useEffect(() => {
@@ -87,13 +97,48 @@ export default function HomePage() {
   // Trigger geolocation on user action when switching to Map view
   const handleViewChange = (mode) => {
     setView(mode);
-    if (mode === 'map' && navigator.geolocation) {
+    if (mode === 'map' && navigator.geolocation && !userLocation && !locationCoords) {
       navigator.geolocation.getCurrentPosition(
         (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
         () => {},
         { enableHighAccuracy: true, timeout: 15000 }
       );
     }
+  };
+
+  // Geocode the typed location and set as active coordinates
+  const handleLocationSearch = async () => {
+    const q = (locationText || '').trim();
+    if (!q) return;
+    try {
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(q)}&key=${process.env.REACT_APP_MAP_API_KEY}`;
+      const res = await fetch(url);
+      const json = await res.json();
+      const loc = json?.results?.[0]?.geometry?.location;
+      if (loc && typeof loc.lat === 'number' && typeof loc.lng === 'number') {
+        const coords = { lat: loc.lat, lng: loc.lng };
+        setLocationCoords(coords);
+        setUserLocation(coords); // center map to searched location
+        // Optionally switch to map view when searching a location
+        setView('map');
+      }
+    } catch (e) {
+      // silent fail
+    }
+  };
+
+  const useMyLocation = () => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setLocationCoords(null); // clear manual override
+        setUserLocation(coords);
+        setView('map');
+      },
+      () => {},
+      { enableHighAccuracy: true, timeout: 15000 }
+    );
   };
 
   // Derived lists and pagination (restored)
@@ -123,6 +168,28 @@ export default function HomePage() {
     }
     return arr;
   }, [currentPage, pageCount]);
+
+  const toggleExpand = async (id) => {
+    setExpandedId(prev => (prev === id ? null : id));
+    // Fetch detail only once and cache it
+    if (!detailsCache[id]) {
+      try {
+        const params = new URLSearchParams();
+        const loc = locationCoords || userLocation;
+        if (loc?.lat && loc?.lng) {
+          params.set('lat', String(loc.lat));
+          params.set('lng', String(loc.lng));
+        }
+        const res = await fetch(`${API_BASE}/api/workshops/${id}?${params.toString()}`);
+        const json = await res.json();
+        if (json?.success && json?.data) {
+          setDetailsCache(prev => ({ ...prev, [id]: json.data }));
+        }
+      } catch {}
+    }
+  };
+
+  const openDetail = (id) => navigate(`/workshops/${id}`);
 
   return (
     <div className="hg-root">
@@ -190,6 +257,25 @@ export default function HomePage() {
               <button className={sortBy==='rated'?'active':''} onClick={()=>setSortBy('rated')}>Most Rated</button>
             </div>
           </div>
+          <div className="hg-pill">
+            <label>Location</label>
+            <div className="hg-sort" style={{ gap: 8 }}>
+              <input
+                className="hg-radius"
+                style={{ width: 180 }}
+                type="text"
+                placeholder="City, area..."
+                value={locationText}
+                onChange={(e)=>setLocationText(e.target.value)}
+                onKeyDown={(e)=>{ if(e.key==='Enter') handleLocationSearch(); }}
+              />
+              <button onClick={handleLocationSearch}>Set</button>
+              <button title="Use my location" onClick={useMyLocation}>📍</button>
+              {locationCoords && (
+                <button title="Clear" onClick={()=>setLocationCoords(null)}>✕</button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -202,13 +288,13 @@ export default function HomePage() {
             <MapSection workshops={filtered} userLocation={userLocation} />
           ) : view === 'list' ? (
             pageItems.map(w => {
-              // Removed premium badge logic; show actual rating instead
+              
               const rating = Number(w.ratingAvg || 0);
               const reviews = Number(w.reviewsCount || 0);
               const fullStars = Math.round(rating);
               const stars = '★'.repeat(Math.max(0, Math.min(5, fullStars))) + '☆'.repeat(Math.max(0, 5 - fullStars));
               return (
-                <section key={w._id} className="hg-card">
+                <section key={w._id} className="hg-card" onClick={() => openDetail(w._id)} style={{ cursor: 'pointer' }}>
                   <div className="hg-avatar">
                     <img alt="preview" src={(w.images && w.images[0]) || 'https://via.placeholder.com/120'} />
                   </div>
@@ -247,7 +333,7 @@ export default function HomePage() {
                 const fullStars = Math.round(rating);
                 const stars = '★'.repeat(Math.max(0, Math.min(5, fullStars))) + '☆'.repeat(Math.max(0, 5 - fullStars));
                 return (
-                  <div key={w._id} className="card-item">
+                  <div key={w._id} className="card-item" onClick={() => openDetail(w._id)} style={{ cursor: 'pointer' }}>
                     <img alt="preview" src={(w.images && w.images[0]) || 'https://via.placeholder.com/320x180'} />
                     <div className="meta">
                       <div className="title-row">
