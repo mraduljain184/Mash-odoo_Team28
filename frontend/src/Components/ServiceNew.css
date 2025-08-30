@@ -15,3 +15,5 @@
 .sn-checkout{background:#6b63ff;border:none;color:#fff;padding:10px 20px;border-radius:12px}
 .sn-maplabel{margin-bottom:8px}
 .sn-maploading{background:#171717;border:1px solid #2a2a2a;border-radius:12px;height:180px;display:flex;align-items:center;justify-content:center;color:#aaa}
+.sn-hint{font-size:12px;color:#b3b3b3;margin-top:6px}
+.sn-preview{margin-top:8px;max-width:240px;border-radius:10px;border:1px solid #2a2a2a}

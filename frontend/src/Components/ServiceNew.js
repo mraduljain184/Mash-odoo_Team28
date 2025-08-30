@@ -10,14 +10,21 @@ export default function ServiceNew() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: '', description: '', serviceType: 'instant', serviceTimeStart: '', serviceTimeEnd: '' });
   const [coords, setCoords] = useState(null);
-  const [file, setFile] = useState(null);
+  const [imageUrl, setImageUrl] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [uploadErr, setUploadErr] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const { isLoaded } = useJsApiLoader({ googleMapsApiKey: process.env.REACT_APP_MAP_API_KEY });
+
+  useEffect(() => {
+    console.log('[ServiceNew] API_BASE =', API_BASE);
+  }, []);
 
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(pos => {
         setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-      }, () => {});
+      }, (err) => { console.warn('[ServiceNew] geolocation error', err); });
     }
   }, []);
 
@@ -26,31 +33,73 @@ export default function ServiceNew() {
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
+  const fetchSignature = async () => {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API_BASE}/api/cloudinary/signature`, { headers: { Authorization: `Bearer ${token}` } });
+    const json = await res.json();
+    if (!json.success) throw new Error('Failed to get upload signature');
+    return json.data; // { timestamp, signature, cloudName, apiKey, folder }
+  };
+
+  const uploadToCloudinary = async (file) => {
+    setUploadErr('');
+    if (!file) return;
+    try {
+      setUploading(true);
+      const cfg = await fetchSignature();
+      console.log('[ServiceNew] obtained signature', cfg);
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('api_key', cfg.apiKey);
+      fd.append('timestamp', cfg.timestamp);
+      fd.append('signature', cfg.signature);
+      fd.append('folder', cfg.folder);
+      const url = `https://api.cloudinary.com/v1_1/${cfg.cloudName}/image/upload`;
+      console.log('[ServiceNew] uploading to', url);
+      const res = await fetch(url, { method: 'POST', body: fd });
+      const json = await res.json();
+      console.log('[ServiceNew] Cloudinary response', res.status, json);
+      if (!res.ok || json?.error) throw new Error(json?.error?.message || `status ${res.status}`);
+      if (json.secure_url) setImageUrl(json.secure_url);
+    } catch (err) {
+      console.error('[ServiceNew] upload error', err);
+      setUploadErr(String(err?.message || err));
+      alert(`Cloudinary upload error: ${String(err?.message || err)}`);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const submit = async (e) => {
     e.preventDefault();
-    const fd = new FormData();
-    fd.append('name', form.name);
-    fd.append('description', form.description);
-    fd.append('serviceType', form.serviceType);
-    if (form.serviceType === 'prebook') {
-      if (form.serviceTimeStart) fd.append('serviceTimeStart', form.serviceTimeStart);
-      if (form.serviceTimeEnd) fd.append('serviceTimeEnd', form.serviceTimeEnd);
-    }
-    if (coords) {
-      fd.append('lat', String(coords.lat));
-      fd.append('lng', String(coords.lng));
-    }
-    if (workshopId) fd.append('workshopId', workshopId);
-    if (file) fd.append('image', file);
-
+    if (submitting) return;
+    setSubmitting(true);
+    const body = {
+      name: form.name,
+      description: form.description,
+      serviceType: form.serviceType,
+      serviceTimeStart: form.serviceType === 'prebook' ? form.serviceTimeStart : undefined,
+      serviceTimeEnd: form.serviceType === 'prebook' ? form.serviceTimeEnd : undefined,
+      lat: coords?.lat,
+      lng: coords?.lng,
+      workshopId,
+      imageUrl,
+    };
+    console.log('[ServiceNew] submitting service payload', body);
     const token = localStorage.getItem('token');
-    const res = await fetch(`${API_BASE}/api/services`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: fd,
-    });
-    const json = await res.json();
-    if (json.success) navigate(`/workshops/${workshopId}`);
+    try {
+      const res = await fetch(`${API_BASE}/api/services`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      console.log('[ServiceNew] backend create response', res.status, json);
+      if (json.success) navigate(`/workshops/${workshopId}`);
+    } catch (err) {
+      console.error('[ServiceNew] submit exception', err);
+      alert('Failed to create service');
+    } finally { setSubmitting(false); }
   };
 
   return (
@@ -97,7 +146,10 @@ export default function ServiceNew() {
 
           <label className="sn-field">
             <span>Upload Image:</span>
-            <input type="file" accept="image/*" onChange={(e)=> setFile(e.target.files?.[0] || null)} />
+            <input type="file" accept="image/*" onChange={(e)=> uploadToCloudinary(e.target.files?.[0])} disabled={uploading} />
+            {uploading && <div className="sn-hint">Uploading…</div>}
+            {uploadErr && <div className="sn-error">{uploadErr}</div>}
+            {imageUrl && <img className="sn-preview" src={imageUrl} alt="preview" />}
           </label>
 
           <label className="sn-field">
@@ -107,21 +159,19 @@ export default function ServiceNew() {
 
           <button type="button" className="sn-chat">Chat with agent</button>
           <div className="sn-actions">
-            <button type="submit" className="sn-checkout">Checkout</button>
+            <button type="submit" className="sn-checkout" disabled={submitting || uploading}>{submitting ? 'Processing…' : 'Checkout'}</button>
           </div>
         </div>
 
         <aside className="sn-right">
-          <div className="sn-mapwrap">
-            <div className="sn-maplabel">Location</div>
-            {isLoaded && coords ? (
-              <GoogleMap center={coords} zoom={14} mapContainerStyle={{ width: '100%', height: '180px', borderRadius: '12px' }}>
-                <Marker position={coords} />
-              </GoogleMap>
-            ) : (
-              <div className="sn-maploading">Loading map…</div>
-            )}
-          </div>
+          <div className="sn-maplabel">Location</div>
+          {isLoaded && coords ? (
+            <GoogleMap center={coords} zoom={14} mapContainerStyle={{ width: '100%', height: '180px', borderRadius: '12px' }}>
+              <Marker position={coords} />
+            </GoogleMap>
+          ) : (
+            <div className="sn-maploading">Loading map…</div>
+          )}
         </aside>
       </form>
     </div>

@@ -8,6 +8,7 @@ import VerifyEmail from "./Components/VerifyEmail";
 import HomePage from "./Components/HomePage";
 import WorkshopDetail from "./Components/WorkshopDetail";
 import ServiceNew from "./Components/ServiceNew";
+import AdminHome from "./Components/AdminHome";
 
 
 
@@ -24,6 +25,7 @@ function App() {
         <Route path="/" element={<PrivateRoute><HomePage /></PrivateRoute>} />
         <Route path="/workshops/:id" element={<PrivateRoute><WorkshopDetail /></PrivateRoute>} />
         <Route path="/workshops/:id/service/new" element={<PrivateRoute><ServiceNew /></PrivateRoute>} />
+        <Route path="/admin" element={<PrivateRoute><AdminHome /></PrivateRoute>} />
         <Route path="/login" element={<LoginPage setUser={setUser} />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
