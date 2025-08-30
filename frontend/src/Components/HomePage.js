@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import './HomePage.css';
 import MapSection from './MapViewPage';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
 
 const API_BASE = process.env.REACT_APP_API_BASE || '';
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const { setUser: setAuthUser } = useAuth();
   const [query, setQuery] = useState('');
   const [showOpenOnly, setShowOpenOnly] = useState(false);
   const [status, setStatus] = useState('all'); // all | open | closed
@@ -22,6 +24,14 @@ export default function HomePage() {
   const [locationCoords, setLocationCoords] = useState(null); // {lat,lng} from text search
   const [expandedId, setExpandedId] = useState(null);
   const [detailsCache, setDetailsCache] = useState({}); // id -> details
+
+  const logout = () => {
+    try { localStorage.removeItem('token'); } catch {}
+    try { localStorage.removeItem('user'); } catch {}
+    try { setAuthUser && setAuthUser(null); } catch {}
+    try { navigate('/login', { replace: true }); } catch {}
+    try { window.location.replace('/login'); } catch {}
+  };
 
   const radiusValue = useMemo(() => {
     if (distance === 'lt2') return 2;
@@ -198,7 +208,8 @@ export default function HomePage() {
         <div className="hg-brand">RoadGuard</div>
         <nav className="hg-nav">
           <a href="/" className="active">Home</a>
-          <a href="/login">Login</a>
+          {/* Replace Login with Logout when authenticated */}
+          <button className="icon-btn" onClick={logout} title="Logout">Logout</button>
           <button className="icon-btn" title="Profile">⚪</button>
           <button className="icon-btn" title="Notifications">🔔</button>
         </nav>

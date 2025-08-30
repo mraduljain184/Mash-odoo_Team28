@@ -56,13 +56,49 @@ exports.userLogin = async (req, res, next) => {
   try {
     const email = (req.body.email || '').toLowerCase();
 
-    let account = await Worker.findOne({ email });
-    let role = 'worker';
+    // Only allow real end-users to login via this endpoint
+    const account = await User.findOne({ email });
+    if (!account || (account.role && account.role !== 'user')) {
+      return res.status(400).json({ success: false, message: 'Invalid credentials' });
+    }
 
+    if (!account.isVerified) return res.status(403).json({ success: false, message: 'Email not verified. Please verify your email before logging in.' });
+
+    const isMatch = await bcrypt.compare(req.body.password, account.password);
+    if (!isMatch) return res.status(400).json({ success: false, message: 'Invalid credentials' });
+
+    const role = 'user';
+    const token = jwt.sign({ id: account._id, role }, process.env.JWT_SECRET, { expiresIn: '2h' });
+    console.log(`User logged in: ${account.email} (${account.name}) role=${role} at ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`);
+
+    res.json({
+      success: true,
+      token,
+      data: {
+        id: account._id,
+        name: account.name,
+        role
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// New: Worker login dedicated endpoint
+exports.workerLogin = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ success: false, message: 'Invalid input', errors: errors.array() });
+  try {
+    const email = (req.body.email || '').toLowerCase();
+
+    // Prefer Worker collection
+    let account = await Worker.findOne({ email });
+
+    // Support legacy workers stored in User collection with role 'worker'
     if (!account) {
-      account = await User.findOne({ email });
-      // respect role from legacy user collection
-      role = account && account.role === 'worker' ? 'worker' : 'user';
+      const legacy = await User.findOne({ email, role: 'worker' });
+      if (legacy) account = legacy;
     }
 
     if (!account) return res.status(400).json({ success: false, message: 'Invalid credentials' });
@@ -71,8 +107,9 @@ exports.userLogin = async (req, res, next) => {
     const isMatch = await bcrypt.compare(req.body.password, account.password);
     if (!isMatch) return res.status(400).json({ success: false, message: 'Invalid credentials' });
 
+    const role = 'worker';
     const token = jwt.sign({ id: account._id, role }, process.env.JWT_SECRET, { expiresIn: '2h' });
-    console.log(`User logged in: ${account.email} (${account.name}) role=${role} at ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`);
+    console.log(`Worker logged in: ${account.email} (${account.name}) role=${role} at ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`);
 
     res.json({
       success: true,

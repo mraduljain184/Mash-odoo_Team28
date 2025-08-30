@@ -17,14 +17,24 @@ router.post('/admin/login', function(req, res, next) {
   });
 });
 
-// User login (by email)
+// User login (strictly end-users only)
 router.post('/user/login', function(req, res, next) {
   body('email').isEmail().normalizeEmail()(req, res, function(err) {
     if (err) return next(err);
     body('password').notEmpty()(req, res, function(err) {
       if (err) return next(err);
-      // Call the correct controller function
       authController.userLogin(req, res, next);
+    });
+  });
+});
+
+// Worker login (workers only)
+router.post('/worker/login', function(req, res, next) {
+  body('email').isEmail().normalizeEmail()(req, res, function(err) {
+    if (err) return next(err);
+    body('password').notEmpty()(req, res, function(err) {
+      if (err) return next(err);
+      authController.workerLogin(req, res, next);
     });
   });
 });

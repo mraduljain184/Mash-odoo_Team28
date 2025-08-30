@@ -1,17 +1,24 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./LoginPage.css";
+import { useAuth } from '../auth/AuthContext';
 
 const API_BASE = process.env.REACT_APP_API_BASE;
 
 const LoginPage = ({ setUser }) => {
   const navigate = useNavigate();
+  const { setUser: setAuthUser } = useAuth();
   const [userType, setUserType] = useState("user");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [adminName, setAdminName] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const goto = (path) => {
+    try { navigate(path, { replace: true }); } catch {}
+    try { window.location.replace(path); } catch {}
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -29,7 +36,12 @@ const LoginPage = ({ setUser }) => {
     try {
       setLoading(true);
       const isAdmin = userType === "admin";
-      const url = isAdmin ? "/api/auth/admin/login" : "/api/auth/user/login";
+      const isWorker = userType === "worker";
+      const url = isAdmin
+        ? "/api/auth/admin/login"
+        : isWorker
+          ? "/api/auth/worker/login"
+          : "/api/auth/user/login";
       const body = isAdmin
         ? { username: adminName.trim().toLowerCase(), password: adminPassword }
         : { email: email.trim().toLowerCase(), password };
@@ -52,7 +64,7 @@ const LoginPage = ({ setUser }) => {
           alert(
             "Email not verified. Please enter the token sent to your email."
           );
-          navigate("/verify-email");
+          goto("/verify-email");
           setLoading(false);
           return;
         }
@@ -65,32 +77,25 @@ const LoginPage = ({ setUser }) => {
         ? data.data
         : { ...data.data, email: (email || "").trim().toLowerCase() };
       localStorage.setItem("user", JSON.stringify(payloadUser));
+
+      // Immediately update AuthContext so guards pass
+      try { setAuthUser && setAuthUser({ ...payloadUser, token: data.token }); } catch {}
+
+      // Backward compatibility with any legacy state
       setUser && setUser(payloadUser);
 
-      // Redirects based on role
-      if (isAdmin) {
-        navigate("/admin");
-        return;
-      }
-
-      if (payloadUser.role === 'worker') {
-        // Check if worker already has a workshop
+      if (isAdmin) return goto('/admin');
+      if (isWorker || payloadUser.role === 'worker') {
         try {
           const token = localStorage.getItem('token');
           const res2 = await fetch(`${API_BASE}/api/workshops/me/own`, { headers: { Authorization: `Bearer ${token}` } });
           const json2 = await res2.json();
-          if (json2.success && json2.data) {
-            navigate('/worker/dashboard');
-          } else {
-            navigate('/worker/workshop/new');
-          }
+          return goto(json2.success && json2.data ? '/worker/dashboard' : '/worker/workshop/new');
         } catch {
-          navigate('/worker/workshop/new');
+          return goto('/worker/workshop/new');
         }
-        return;
       }
-
-      navigate("/");
+      goto('/');
     } catch (err) {
       alert("Login error");
     } finally {

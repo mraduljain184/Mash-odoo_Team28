@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './WorkerDashboard.css';
+import { useAuth } from '../auth/AuthContext';
 
 const API_BASE = process.env.REACT_APP_API_BASE || '';
 
@@ -8,6 +9,7 @@ export default function WorkerDashboard() {
   const [workshop, setWorkshop] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { setUser: setAuthUser } = useAuth();
 
   useEffect(() => {
     let done = false;
@@ -32,6 +34,14 @@ export default function WorkerDashboard() {
     return () => { done = true; };
   }, [navigate]);
 
+  const logout = () => {
+    try { localStorage.removeItem('token'); } catch {}
+    try { localStorage.removeItem('user'); } catch {}
+    try { setAuthUser && setAuthUser(null); } catch {}
+    try { navigate('/login', { replace: true }); } catch {}
+    try { window.location.replace('/login'); } catch {}
+  };
+
   if (loading) return <div className="wdash-root"><div className="wdash-loading">Loading…</div></div>;
   if (!workshop) return null;
 
@@ -40,7 +50,10 @@ export default function WorkerDashboard() {
       <header className="wdash-header">
         <div className="wdash-brand">RoadGuard</div>
         <div className="wdash-title">My Workshop</div>
-        <button className="wdash-edit" onClick={()=> navigate('/worker/workshop/new')}>Edit</button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="wdash-edit" onClick={()=> navigate('/worker/workshop/new')}>Edit</button>
+          <button className="wdash-edit" onClick={logout}>Logout</button>
+        </div>
       </header>
       <main className="wdash-main">
         <section className="wdash-card">

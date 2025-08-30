@@ -12,12 +12,45 @@ import AdminHome from "./Components/AdminHome";
 import WorkerAddWorkshop from "./Components/WorkerAddWorkshop";
 import WorkerDashboard from "./Components/WorkerDashboard";
 import ServiceTrack from "./Components/ServiceTrack";
+import { useAuth } from './auth/AuthContext';
 
 
 
 function PrivateRoute({ children }) {
-  const token = localStorage.getItem("token");
-  return token ? children : <Navigate to="/login" replace />;
+  const { user, ready } = useAuth();
+  const location = useLocation();
+  if (!ready) return null; // loader can be added
+  if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
+  return children;
+}
+
+function AdminRoute({ children }) {
+  const { user, ready } = useAuth();
+  const location = useLocation();
+  if (!ready) return null;
+  if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
+  if (user.role !== 'admin') return <Navigate to="/" replace />;
+  return children;
+}
+
+function WorkerRoute({ children }) {
+  const { user, ready } = useAuth();
+  const location = useLocation();
+  if (!ready) return null;
+  if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
+  if (user.role !== 'worker') return <Navigate to="/" replace />;
+  return children;
+}
+
+function LoginOrRedirect() {
+  const { user, ready } = useAuth();
+  if (!ready) return null;
+  if (user) {
+    if (user.role === 'admin') return <Navigate to="/admin" replace />;
+    if (user.role === 'worker') return <Navigate to="/worker/dashboard" replace />;
+    return <Navigate to="/" replace />;
+  }
+  return <LoginPage />;
 }
 
 function App() {
@@ -29,10 +62,10 @@ function App() {
         <Route path="/workshops/:id" element={<PrivateRoute><WorkshopDetail /></PrivateRoute>} />
         <Route path="/workshops/:id/service/new" element={<PrivateRoute><ServiceNew /></PrivateRoute>} />
         <Route path="/services/:id/track" element={<PrivateRoute><ServiceTrack /></PrivateRoute>} />
-        <Route path="/admin" element={<PrivateRoute><AdminHome /></PrivateRoute>} />
-        <Route path="/worker/workshop/new" element={<PrivateRoute><WorkerAddWorkshop /></PrivateRoute>} />
-        <Route path="/worker/dashboard" element={<PrivateRoute><WorkerDashboard /></PrivateRoute>} />
-        <Route path="/login" element={<LoginPage setUser={setUser} />} />
+        <Route path="/admin" element={<AdminRoute><AdminHome /></AdminRoute>} />
+        <Route path="/worker/workshop/new" element={<WorkerRoute><WorkerAddWorkshop /></WorkerRoute>} />
+        <Route path="/worker/dashboard" element={<WorkerRoute><WorkerDashboard /></WorkerRoute>} />
+        <Route path="/login" element={<LoginOrRedirect />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />

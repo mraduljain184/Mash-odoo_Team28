@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import io from 'socket.io-client';
 import './AdminHome.css';
+import { useAuth } from '../auth/AuthContext';
 
 const API_BASE = process.env.REACT_APP_API_BASE || '';
 const SOCKET_ENV = process.env.REACT_APP_SOCKET_URL || '';
@@ -8,6 +9,14 @@ const SOCKET_ENV = process.env.REACT_APP_SOCKET_URL || '';
 export default function AdminHome(){
   const [items, setItems] = useState([]);
   const [settings, setSettings] = useState({ openForRequest: true });
+  const { setUser: setAuthUser } = useAuth();
+
+  const logout = () => {
+    try { localStorage.removeItem('token'); } catch {}
+    try { localStorage.removeItem('user'); } catch {}
+    try { setAuthUser && setAuthUser(null); } catch {}
+    try { window.location.replace('/login'); } catch {}
+  };
 
   const refresh = async () => {
     const r1 = await fetch(`${API_BASE}/api/admin/service-requests`).then(r=>r.json());
@@ -59,6 +68,7 @@ export default function AdminHome(){
           <span>Open For Request</span>
         </div>
         <div className="ah-right">
+          <button className="ah-btn" onClick={logout}>Logout</button>
           <button className="ah-btn">Notification</button>
           <button className="ah-user">User</button>
         </div>
