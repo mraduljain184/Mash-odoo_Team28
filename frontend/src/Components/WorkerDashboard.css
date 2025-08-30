@@ -1,0 +1,9 @@
+/* Namespaced styles for worker dashboard */
+.wdash-root { background: #0b1020; color: #e6e9f2; min-height: 100vh; }
+.wdash-header { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid #222b45; }
+.wdash-brand { font-weight: 800; color: #6ee7ff; letter-spacing: 1px; }
+.wdash-title { color: #cdd6f4; }
+.wdash-edit { background: #1f2a44; color: #c9d6ff; border: 1px solid #2a3a62; padding: 8px 12px; border-radius: 10px; cursor: pointer; }
+.wdash-main { padding: 24px; max-width: 1000px; margin: 0 auto; }
+.wdash-card { background: #0f162b; border: 1px solid #1c2744; border-radius: 12px; padding: 16px; }
+.wdash-loading { padding: 48px; text-align: center; color: #9aaccc; }

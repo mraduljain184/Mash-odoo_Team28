@@ -1,0 +1,20 @@
+/* Namespaced styles for Worker Add Workshop page */
+.ws-root { background: #0b1020; color: #e6e9f2; min-height: 100vh; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+.ws-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid #222b45; }
+.ws-brand { font-weight: 800; color: #6ee7ff; letter-spacing: 1px; }
+.ws-title { font-size: 18px; color: #cdd6f4; }
+.ws-form { display: grid; grid-template-columns: 1fr 340px; gap: 24px; padding: 24px; max-width: 1100px; margin: 0 auto; }
+.ws-left { display: flex; flex-direction: column; gap: 16px; }
+.ws-field { display: flex; flex-direction: column; gap: 8px; }
+.ws-field span { font-size: 13px; color: #a6b3cc; }
+.ws-field input, .ws-field select { background: #11172a; color: #e6e9f2; border: 1px solid #1c2744; border-radius: 10px; padding: 10px 12px; outline: none; }
+.ws-actions { margin-top: 8px; }
+.ws-btn { background: linear-gradient(135deg, #5eead4, #60a5fa); color: #0b1020; border: none; padding: 10px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+.ws-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.ws-right { background: #0f162b; border: 1px solid #1c2744; border-radius: 12px; padding: 14px; height: fit-content; }
+.ws-maplabel { font-size: 12px; color: #9aaccc; margin-bottom: 8px; }
+.ws-maploading { color: #7f8fa3; font-size: 14px; padding: 28px 0; text-align: center; }
+.ws-hint { color: #93a2bd; font-size: 12px; margin-top: 8px; }
+.ws-error { margin-top: 12px; color: #ff6b6b; font-size: 14px; }
+
+@media (max-width: 900px) { .ws-form { grid-template-columns: 1fr; } .ws-right { order: -1; } }

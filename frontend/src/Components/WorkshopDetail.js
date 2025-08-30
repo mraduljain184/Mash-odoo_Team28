@@ -108,12 +108,12 @@ export default function WorkshopDetail() {
             <WDMiniMap coordinates={data.location?.coordinates} />
           </div>
           <div className="wd-owner">
-            {/* Worker details from worker.js schema (populated as `owner`) */}
+            {/* Worker details from worker.js schema (populated as `workerId`) */}
             <h4>Worker</h4>
             {(() => {
-              const name = data.owner?.name || '—';
-              const phone = data.owner?.phone || '—';
-              const email = data.owner?.email || '—';
+              const name = data.workerId?.name || '—';
+              const phone = data.workerId?.phone || '—';
+              const email = data.workerId?.email || '—';
               return (
                 <div>
                   <div><strong>Name:</strong> {name}</div>

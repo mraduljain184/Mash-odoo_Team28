@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 
 const WorkshopSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
-  owner: { type: mongoose.Schema.Types.ObjectId, ref: 'worker', required: false },
+  // Link to worker who owns/manages this workshop
+  workerId: { type: mongoose.Schema.Types.ObjectId, ref: 'worker', required: true },
   status: { type: String, enum: ['open', 'closed'], default: 'open', required: true },
   address: { type: String, trim: true },
   location: {

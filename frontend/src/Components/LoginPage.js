@@ -66,7 +66,31 @@ const LoginPage = ({ setUser }) => {
         : { ...data.data, email: (email || "").trim().toLowerCase() };
       localStorage.setItem("user", JSON.stringify(payloadUser));
       setUser && setUser(payloadUser);
-      navigate(isAdmin ? "/admin" : "/");
+
+      // Redirects based on role
+      if (isAdmin) {
+        navigate("/admin");
+        return;
+      }
+
+      if (payloadUser.role === 'worker') {
+        // Check if worker already has a workshop
+        try {
+          const token = localStorage.getItem('token');
+          const res2 = await fetch(`${API_BASE}/api/workshops/me/own`, { headers: { Authorization: `Bearer ${token}` } });
+          const json2 = await res2.json();
+          if (json2.success && json2.data) {
+            navigate('/worker/dashboard');
+          } else {
+            navigate('/worker/workshop/new');
+          }
+        } catch {
+          navigate('/worker/workshop/new');
+        }
+        return;
+      }
+
+      navigate("/");
     } catch (err) {
       alert("Login error");
     } finally {

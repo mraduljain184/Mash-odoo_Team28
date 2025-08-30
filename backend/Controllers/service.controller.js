@@ -47,3 +47,30 @@ exports.create = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.get = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const role = req.user?.role;
+    const userId = req.user?.id;
+
+    const doc = await Service.findById(id).lean();
+    if (!doc) return res.status(404).json({ success: false, message: 'Service not found' });
+
+    // Authorization: owner user can view; admin/worker can view
+    if (!(role === 'admin' || role === 'worker' || String(doc.user) === String(userId))) {
+      return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+
+    // Provide lat/lng convenience
+    let lat = null, lng = null;
+    if (doc.location?.coordinates && doc.location.coordinates.length >= 2) {
+      lng = doc.location.coordinates[0];
+      lat = doc.location.coordinates[1];
+    }
+
+    res.json({ success: true, data: { ...doc, lat, lng } });
+  } catch (err) {
+    next(err);
+  }
+};

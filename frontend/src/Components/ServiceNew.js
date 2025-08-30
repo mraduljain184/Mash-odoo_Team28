@@ -95,7 +95,15 @@ export default function ServiceNew() {
       });
       const json = await res.json();
       console.log('[ServiceNew] backend create response', res.status, json);
-      if (json.success) navigate(`/workshops/${workshopId}`);
+      if (json.success) {
+        // Redirect to Track Service page
+        const sid = json.data?._id || json.data?.id;
+        if (sid) {
+          navigate(`/services/${sid}/track`);
+        } else {
+          navigate(`/workshops/${workshopId}`);
+        }
+      }
     } catch (err) {
       console.error('[ServiceNew] submit exception', err);
       alert('Failed to create service');
