@@ -45,7 +45,6 @@ app.get("/", (req, res) => {
   res.send("Welcome to the Admin Panel");
 });
 
-
 io.on('connection', (socket) => {
   // rooms for roles could be added later
   socket.on('join', (room) => socket.join(room));
