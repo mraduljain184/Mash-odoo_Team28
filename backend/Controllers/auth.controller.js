@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const { validationResult } = require('express-validator');
 const User = require('../Models/user');
 
-const { sendResetPasswordEmail } = require('../utils/emailService');
+const { sendResetPasswordEmail } = require('../Utils/emailService');
 
 // Token validation endpoint
 exports.validateToken = async (req, res, next) => {
