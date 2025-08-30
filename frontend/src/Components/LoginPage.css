@@ -1,0 +1,588 @@
+body, .login-page {
+  min-height: 100vh;
+  background: #121212;
+  margin: 0;
+  font-family: 'Poppins', Arial, sans-serif;
+}
+
+.login-page {
+  position: relative;
+  width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.login-container {
+  display: flex;
+  flex-direction: row;
+  width: 900px;
+  max-width: 98vw;
+  background: none;
+  border-radius: 24px;
+  box-shadow: none;
+  z-index: 1;
+}
+
+.login-form-section {
+  background: #181818;
+  border-radius: 24px 0 0 24px;
+  padding: clamp(24px, 4vw, 48px) clamp(20px, 3.5vw, 36px);
+  width: 370px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  box-shadow: 0 4px 32px 0 rgba(0,0,0,0.12);
+  position: relative;
+  z-index: 2;
+}
+.institution-logo {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+.logo-image {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+}
+
+.login-title {
+  font-size: clamp(1.6rem, 4vw, 2.5rem);
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 32px;
+  text-align: left;
+  width: 100%;
+}
+
+.user-type-selection {
+  width: 100%;
+  margin-bottom: 24px;
+}
+.radio-group {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+.radio-label {
+  flex: 1;
+  background: #232323;
+  color: #fff;
+  border-radius: 12px;
+  padding: 10px 0;
+  text-align: center;
+  font-weight: 500;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border 0.2s, background 0.2s;
+  user-select: none;
+}
+.radio-label.selected {
+  border: 2px solid #b8d62f;
+  background: #232323;
+  color: #b8d62f;
+}
+.radio-label input {
+  display: none;
+}
+
+/* Pill-style user type switch */
+.user-type-selection-pill {
+  display: flex;
+  width: 100%;
+  gap: 0;
+  margin-bottom: 28px;
+  background: #232323;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid #b8d62f;
+}
+.pill-btn {
+  flex: 1;
+  background: transparent;
+  color: #fff;
+  border: none;
+  outline: none;
+  font-size: 1.1rem;
+  font-weight: 500;
+  padding: 14px 0;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.pill-btn.active {
+  background: #e4d204;
+  color: #181818;
+  font-weight: 700;
+}
+
+.login-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+.form-group {
+  display: flex;
+  align-items: center;
+  background: #232323;
+  border-radius: 12px;
+  padding: 0 16px;
+  height: 52px;
+  margin-bottom: 0;
+}
+.input-icon {
+  margin-right: 10px;
+  font-size: 1.2rem;
+  color: #b8d62f;
+}
+.form-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 16px; /* prevents iOS zoom on focus */
+  padding: 12px 0;
+}
+
+/* Password group for RegisterPage (show/hide eye icon) */
+.password-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.password-group .form-input {
+  flex: 1;
+  min-width: 0;
+}
+.eye-icon {
+  font-size: 1.3em;
+  margin-left: 8px;
+  user-select: none;
+  color: #333;
+  transition: color 0.2s;
+}
+.eye-icon:hover {
+  color: #007bff;
+}
+
+.login-btn {
+  width: 100%;
+  background: #e4d204;
+  color: #181818;
+  font-weight: 700;
+  font-size: 1.05rem;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 0;
+  margin-top: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+  letter-spacing: 1px;
+}
+.login-btn:hover {
+  background: #a5c429;
+}
+.login-btn:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+  filter: grayscale(.2);
+}
+.login-btn:disabled:hover { background: #e4d204; }
+/* Title adjustment for Register (same structure, different text) */
+.login-form-section h1.login-title { letter-spacing: .5px; }
+/* Smooth fade-in */
+.login-form-section, .hero-banner-section { animation: authFade .5s ease; }
+@keyframes authFade { from { opacity: 0; transform: translateY(8px); } to { opacity:1; transform: translateY(0);} }
+/* Hero image refinement */
+.hero-banner-section .banner-content img { object-fit: cover; }
+/* Register link hover */
+.register-link-bottom .register-highlight:hover { text-decoration: underline; }
+/* Input accessibility */
+.form-group:focus-within .input-icon { color: #ffe600; }
+/* === Added shared auth (login/register) refinements === */
+.login-page.sunburst-bg {
+  background: radial-gradient(circle at 20% 20%, #1e1e1e, #121212 70%) !important;
+}
+.login-form-section .form-group:focus-within {
+  box-shadow: 0 0 0 2px #e4d20433;
+  transition: box-shadow .25s;
+}
+.form-input::placeholder { color: #9b9b9b; }
+.form-input:focus { color: #fff; }
+/* Register link at bottom left */
+.register-link-bottom {
+  position: absolute;
+  left: 36px;
+  bottom: 24px;
+  color: #fff;
+  font-size: 1rem;
+  z-index: 2;
+}
+.register-link-bottom .register-highlight {
+  color: #ffe600;
+  font-weight: 700;
+  margin-left: 4px;
+  cursor: pointer;
+}
+
+.register-link {
+  width: 100%;
+  text-align: left;
+  margin-top: 18px;
+  color: #fff;
+  font-size: 0.98rem;
+}
+.register-highlight {
+  color: #ffe600;
+  font-weight: 700;
+  margin-left: 4px;
+  cursor: pointer;
+}
+
+.hero-banner-section {
+  flex: 1;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 100%;
+  position: relative;
+  box-shadow: none;
+}
+.hero-banner-card {
+  background: #d1c92a;
+  border-radius: 36px;
+  box-shadow: 8px 8px 0 0 #b8b000;
+  padding: 36px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  min-width: 420px;
+  min-height: 420px;
+  position: relative;
+}
+.hero-illustration {
+  width: 260px;
+  margin-bottom: 18px;
+  align-self: flex-start;
+}
+.hero-illustration img {
+  width: 100%;
+  height: auto;
+  border-radius: 18px;
+  object-fit: contain;
+}
+.banner-content {
+  text-align: right;
+  width: 100%;
+}
+.banner-content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border-radius: 24px;
+  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.10);
+}
+.banner-title {
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: #181818;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+.live-text {
+  color: #ff0000;
+  font-weight: 900;
+  font-size: 2rem;
+  margin-left: 12px;
+  display: inline-block;
+}
+.banner-desc {
+  color: #181818;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-top: 18px;
+}
+
+/* Sunburst Decorations - larger and more prominent */
+.sunburst {
+  position: absolute;
+  width: 120px;
+  height: 220px;
+  bottom: -40px;
+  left: -40px;
+  z-index: 2;
+  opacity: 1;
+}
+
+.sunburst-tr {
+ 
+  
+   position: absolute;
+  width: 175px;
+  height: 94px;
+  top: -40px;
+  
+  z-index: 2;
+  opacity: 1;
+  top: -40px;
+  right: -40px;
+  
+}
+.sunburst-bl {
+  bottom: -40px;
+  left: -40px;
+  
+}
+.sunburst-bc {
+  bottom: -40px;
+  left: 50%;
+  
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .login-container {
+    flex-direction: column;
+    width: 98vw;
+    min-width: 0;
+    align-items: center;
+  }
+  .login-form-section, .hero-banner-section {
+    border-radius: 24px;
+    width: 100%;
+    min-width: 0;
+    position: relative;
+  }
+  .hero-banner-section {
+    margin-top: 18px;
+    min-height: 220px;
+    padding: 0;
+  }
+  .hero-banner-card {
+    align-items: center;
+    padding: 24px 10px;
+    min-width: 0;
+    min-height: 320px;
+  }
+  .banner-content {
+    text-align: center;
+  }
+  .register-link-bottom {
+    position: static;
+    margin-top: 24px;
+    text-align: center;
+  }
+}
+@media (max-width: 900px) {
+  .login-container {
+    flex-direction: column;
+    width: 98vw;
+    min-width: 0;
+  }
+  .login-form-section, .hero-banner-section {
+    border-radius: 24px;
+    width: 100%;
+    min-width: 0;
+  }
+  .hero-banner-section {
+    margin-top: 18px;
+    min-height: 220px;
+    padding: 0;
+  }
+  .hero-banner-card {
+    align-items: center;
+    padding: 24px 10px;
+    min-width: 0;
+  }
+  .banner-content {
+    text-align: center;
+  }
+}
+@media (max-width: 700px) {
+  .login-form-section, .hero-banner-section {
+    padding: 18px 4vw;
+  }
+  .login-title {
+    font-size: 2rem;
+  }
+  .hero-illustration {
+    width: 140px;
+  }
+  .banner-title {
+    font-size: 1.2rem;
+  }
+  .banner-desc {
+    font-size: 1rem;
+  }
+  .sunburst {
+    width: 60px;
+    height: 60px;
+  }
+  .hero-banner-card {
+    min-width: 0;
+    min-height: 180px;
+  }
+}
+@media (max-width: 600px) {
+  .password-group .form-input {
+    font-size: 1em;
+    padding: 10px 8px;
+  }
+  .eye-icon {
+    font-size: 1.5em;
+    margin-left: 12px;
+  }
+}
+
+
+.login-title {
+  font-size: clamp(1.6rem, 4vw, 2.5rem);
+}
+
+/* Increase spacing and tap targets */
+.login-form-section {
+  padding: clamp(24px, 4vw, 48px) clamp(20px, 3.5vw, 36px);
+}
+.form-group {
+  height: 52px;
+  border-radius: 12px;
+}
+.form-input {
+  font-size: 16px; /* prevents iOS zoom on focus */
+}
+.login-btn {
+  min-height: 52px;
+  font-size: 1.05rem;
+  border-radius: 12px;
+}
+
+/* Role pill switch: make it touch friendly */
+.user-type-selection-pill {
+  height: auto;
+}
+.pill-btn {
+  padding: 14px 0;
+}
+
+/* Container refinement */
+.login-container {
+  gap: 18px;
+}
+
+/* Hero card optional spacing improvements */
+.hero-banner-section .banner-content img {
+  border-radius: 20px;
+}
+
+/* Decorative images: soften on small screens */
+@media (max-width: 640px) {
+  .sunburst, .sunburst-tr { display: none; }
+}
+
+/* Tablet adjustments */
+@media (max-width: 1100px) {
+  .login-form-section { padding: 28px 22px; }
+}
+
+/* Phone-first layout */
+@media (max-width: 640px) {
+  .login-container {
+    width: 100vw;
+    padding: 0 14px;
+    gap: 12px;
+  }
+  .login-form-section {
+    width: 100%;
+    border-radius: 18px;
+    padding: 22px 16px;
+  }
+  .login-title { margin-bottom: 18px; }
+  .user-type-selection-pill {
+    display: grid;
+    grid-template-columns: 1fr; /* stack vertically on phones */
+    border-radius: 12px;
+    border: none;
+    background: transparent;
+    gap: 10px;
+  }
+  .pill-btn {
+    border: 2px solid #b8d62f;
+    border-radius: 12px;
+    background: #232323;
+  }
+  .pill-btn.active {
+    background: #e4d204;
+    color: #181818;
+    border-color: #e4d204;
+  }
+  .form-group {
+    height: 54px;
+    padding: 0 14px;
+  }
+  .login-btn {
+    margin-top: 6px;
+    min-height: 54px;
+    font-size: 1rem;
+  }
+  .hero-banner-section { min-height: 160px; }
+  .hero-banner-section .banner-content img {
+    max-height: 220px;
+    width: 100%;
+    object-fit: cover;
+  }
+}
+
+/* Very small devices */
+@media (max-width: 380px) {
+  .login-form-section { padding: 18px 12px; }
+  .form-group { height: 52px; }
+  .register-link-bottom { font-size: 0.9rem; }
+}
+
+/* Select (dropdown) fixes for dark theme */
+select.form-input {
+  background-color: #232323;
+  color: #fff;
+  border-radius: 12px;
+  height: 52px;
+  padding-right: 32px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+select.form-input:focus {
+  outline: none;
+}
+/* Ensure dropdown list items are readable (OS often uses light popup) */
+select.form-input option {
+  color: #000;
+  background-color: #fff;
+}
+
+/* Optional: add a simple chevron using background image if desired */
+select.form-input::-ms-expand { display: none; }
+/* Small dropdown arrow indicator for selects */
+select.form-input {
+  /* inline SVG chevron so it works without extra assets */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239b9b9b' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px 14px;
+  cursor: pointer;
+}
+/* Highlight the arrow on focus to match accent */
+select.form-input:focus {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ffe600' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+}
+/* Disabled state */
+select.form-input:disabled { cursor: not-allowed; opacity: .75; }
