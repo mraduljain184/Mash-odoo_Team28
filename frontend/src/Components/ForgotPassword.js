@@ -56,14 +56,14 @@ const ForgotPassword = () => {
       <div>
         <img 
           src="https://res.cloudinary.com/djdcwwpbl/image/upload/v1754413839/Screenshot_2025-08-05_224001_xuu1go.png" 
-          alt="Institution Logo" 
+          alt="Logo" 
           className="sunburst" 
         />
       </div>
       <div>
         <img 
           src="https://res.cloudinary.com/djdcwwpbl/image/upload/v1754413503/Vector_h5xttx.png" 
-          alt="Institution Logo" 
+          alt="Logo" 
           className="sunburst-tr" 
         />
       </div>
@@ -73,7 +73,7 @@ const ForgotPassword = () => {
           <div className="institution-logo">
             <img 
               src="odoologo" 
-              alt="Institution Logo" 
+              alt="Logo" 
               className="logo-image" 
             />
           </div>
@@ -136,7 +136,7 @@ const ForgotPassword = () => {
         <div className="hero-banner-section">
           <div className="banner-content">
             <img 
-              src="odoobanner" 
+              src="https://res.cloudinary.com/drr1vc8fd/image/upload/v1756538576/PHOTO-2025-08-30-12-51-34_a0ipfd.jpg" 
               alt="Food Illustration" 
             />
           </div>

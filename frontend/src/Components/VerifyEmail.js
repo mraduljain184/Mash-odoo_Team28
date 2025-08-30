@@ -162,7 +162,7 @@ const VerifyEmail = () => {
         </div>
         <div className="hero-banner-section">
           <div className="banner-content">
-            <img src="https://res.cloudinary.com/djdcwwpbl/image/upload/v1754415310/WhatsApp_Image_2025-08-05_at_10.34.36_PM_t2xrzr.jpg" alt="Food Illustration" />
+            <img src="https://res.cloudinary.com/drr1vc8fd/image/upload/v1756538576/PHOTO-2025-08-30-12-51-34_a0ipfd.jpg" alt="Food Illustration" />
           </div>
         </div>
       </div>
