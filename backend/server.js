@@ -1,3 +1,4 @@
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -12,7 +13,6 @@ const { setIO } = require('./Utils/io');
 const errorHandler = require('./Middlewares/errorHandler.middleware.js');
 const connectDB = require('./Models/db');
 
-
 const app = express();
 // Create HTTP server for app (useful for websockets later)
 const server = http.createServer(app);
@@ -21,14 +21,25 @@ setIO(io);
 
 // Middleware
 app.use(helmet());
+// <<<<<<< HEAD
+// app.use(
+//   cors({
+//     origin: ["https://mash-odoo-team28.vercel.app", "http://localhost:3000"],
+//     credentials: true,
+//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//   })
+// );
+// app.use(express.json());
+// =======
 app.use(cors({
   origin: '*'
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/', (req, res) => {
-  res.send('Welcome to the Admin Panel');
+app.get("/", (req, res) => {
+  res.send("Welcome to the Admin Panel");
 });
 
 io.on('connection', (socket) => {
@@ -51,6 +62,6 @@ app.use(errorHandler);
 // MongoDB connection
 connectDB().then(() => {
   server.listen(process.env.PORT || 5000, () => {
-    console.log('Server running on port', process.env.PORT || 5000);
+    console.log("Server running on port", process.env.PORT || 5000);
   });
 });
