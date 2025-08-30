@@ -5,7 +5,7 @@ import LoginPage from "./Components/LoginPage";
 import ForgotPassword from "./Components/ForgotPassword";
 import ResetPassword from "./Components/ResetPassword";
 import VerifyEmail from "./Components/VerifyEmail";
-import ProfilePage from "./Components/ProfilePage";
+import HomePage from "./Components/HomePage";
 
 
 
@@ -19,23 +19,15 @@ function App() {
   return (
     <div className="App">
       <Routes>
+        <Route path="/" element={<PrivateRoute><HomePage /></PrivateRoute>} />
         <Route path="/login" element={<LoginPage setUser={setUser} />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
-        <Route path="/profile" element={
-          <PrivateRoute>
-            <ProfilePage />
-          </PrivateRoute>
-        } />
       </Routes>
     </div>
   );
 }
-
-
-
-
 
 export default App;

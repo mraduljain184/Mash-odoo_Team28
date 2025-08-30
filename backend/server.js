@@ -31,8 +31,7 @@ app.get('/', (req, res) => {
 // Routes
 app.use('/api/auth', require('./Routes/auth.router.js'));
 app.use('/api/user', require('./Routes/user.router.js'));
-
-
+app.use('/api/workshops', require('./Routes/workshop.router.js'));
 
 
 // Error handler LAST

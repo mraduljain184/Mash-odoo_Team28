@@ -8,6 +8,9 @@ const { sendResetPasswordEmail } = require('../Utils/emailService');
 const Admin = require('../Models/admin');
 const Worker = require('../Models/worker');
 
+// Helper to escape regex special chars
+const _escRe = (s = '') => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 // Token validation endpoint
 exports.validateToken = async (req, res, next) => {
   try {
@@ -19,7 +22,8 @@ exports.validateToken = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     if (decoded.role === 'admin') {
-      const admin = await Admin.findOne({ username: decoded.username?.toLowerCase?.() || decoded.username });
+      const uname = String(decoded.username || '').trim();
+      const admin = await Admin.findOne({ username: { $regex: `^${_escRe(uname)}$`, $options: 'i' } });
       if (!admin) return res.status(401).json({ success: false, message: 'Invalid token admin' });
       return res.json({ success: true, data: { role: 'admin', username: admin.username } });
     }
@@ -40,7 +44,6 @@ exports.validateToken = async (req, res, next) => {
     // Default to end user
     const user = await User.findById(decoded.id);
     if (!user) return res.status(401).json({ success: false, message: 'Invalid token user' });
-    // if legacy token had worker but token says user, still return user.role for safety
     return res.json({ success: true, data: { id: user._id, name: user.name, role: user.role || 'user', email: user.email } });
   } catch (err) {
     res.status(401).json({ success: false, message: 'Invalid or expired token' });
@@ -89,14 +92,15 @@ exports.userLogin = async (req, res, next) => {
 exports.adminLogin = async (req, res, next) => {
   try {
     const { username, password } = req.body || {};
-    const uname = (username || '').toLowerCase();
+    const uname = String(username || '').trim();
 
-    const admin = await Admin.findOne({ username: uname, isActive: true });
-    if (!admin) {
+    // Case-insensitive username match to support manually inserted docs
+    const admin = await Admin.findOne({ username: { $regex: `^${_escRe(uname)}$`, $options: 'i' } });
+    if (!admin || admin.isActive === false) {
       return res.status(400).json({ success: false, message: 'Invalid credentials' });
     }
 
-    const passOk = await bcrypt.compare(password || '', admin.password);
+    const passOk = await bcrypt.compare(password || '', admin.password || '');
     if (!passOk) return res.status(400).json({ success: false, message: 'Invalid credentials' });
 
     const token = jwt.sign({ role: 'admin', username: admin.username }, process.env.JWT_SECRET, { expiresIn: '2h' });
@@ -117,10 +121,8 @@ exports.forgotPassword = async (req, res, next) => {
 
     // Look in both collections
     let account = await User.findOne({ email: lower });
-    let collection = 'user';
     if (!account) {
       account = await Worker.findOne({ email: lower });
-      collection = 'worker';
     }
 
     if (!account) {
