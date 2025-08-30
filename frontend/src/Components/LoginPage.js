@@ -177,7 +177,7 @@ const LoginPage = ({ setUser }) => {
         </div>
         <div className="hero-banner-section">
           <div className="banner-content">
-            <img src="odoobanner" alt="Food Illustration" />
+            <img src="https://res.cloudinary.com/drr1vc8fd/image/upload/v1756538576/PHOTO-2025-08-30-12-51-34_a0ipfd.jpg" alt="Food Illustration" />
           </div>
         </div>
       </div>
