@@ -13,9 +13,6 @@ const { setIO } = require('./Utils/io');
 const errorHandler = require('./Middlewares/errorHandler.middleware.js');
 const connectDB = require('./Models/db');
 
-const errorHandler = require("./Middlewares/errorHandler.middleware.js");
-const connectDB = require("./Models/db");
-
 const app = express();
 // Create HTTP server for app (useful for websockets later)
 const server = http.createServer(app);
