@@ -5,8 +5,14 @@ import LoginPage from "./Components/LoginPage";
 import ForgotPassword from "./Components/ForgotPassword";
 import ResetPassword from "./Components/ResetPassword";
 import VerifyEmail from "./Components/VerifyEmail";
+import ProfilePage from "./Components/ProfilePage";
 
 
+
+function PrivateRoute({ children }) {
+  const token = localStorage.getItem("token");
+  return token ? children : <Navigate to="/login" replace />;
+}
 
 function App() {
   const [user, setUser] = useState(null);
@@ -18,6 +24,11 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/profile" element={
+          <PrivateRoute>
+            <ProfilePage />
+          </PrivateRoute>
+        } />
       </Routes>
     </div>
   );
