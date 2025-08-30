@@ -105,7 +105,7 @@ const VerifyEmail = () => {
       <div className="login-container">
         <div className="login-form-section">
           <div className="institution-logo">
-            <img src="https://res.cloudinary.com/djdcwwpbl/image/upload/v1754410231/Rajiv_Gandhi_Institute_of_Petroleum_Technology_c3svuc.png" alt="Institution Logo" className="logo-image" />
+            <img src="https://res.cloudinary.com/drr1vc8fd/image/upload/v1756541360/favpng_5276fa520b56c455881b4dbef71a90dc_eljvsp.png" alt="Institution Logo" className="logo-image" />
           </div>
           <h1 className="login-title">Verify Email</h1>
           <p style={{ textAlign: 'center', marginBottom: '20px', color: '#666' }}>
