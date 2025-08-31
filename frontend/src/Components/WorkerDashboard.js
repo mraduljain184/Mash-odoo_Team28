@@ -1,15 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './WorkerDashboard.css';
 import { useAuth } from '../auth/AuthContext';
+import io from 'socket.io-client';
 
 const API_BASE = process.env.REACT_APP_API_BASE || '';
+const SOCKET_ENV = process.env.REACT_APP_SOCKET_URL || '';
 
 export default function WorkerDashboard() {
   const [workshop, setWorkshop] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [acceptedNotices, setAcceptedNotices] = useState([]);
   const navigate = useNavigate();
   const { setUser: setAuthUser } = useAuth();
+  const socketRef = useRef(null);
 
   useEffect(() => {
     let done = false;
@@ -25,13 +29,35 @@ export default function WorkerDashboard() {
             return;
           }
           if (!done) setWorkshop(json.data);
+
+          // After we know workerId, connect socket and join private room
+          try {
+            const candidates = [SOCKET_ENV, API_BASE, typeof window !== 'undefined' ? window.location.origin : '']
+              .filter(Boolean)
+              .map(u => u.replace(/^ws/, 'http'));
+            const url = candidates[0];
+            if (socketRef.current) { try { socketRef.current.disconnect(); } catch {} }
+            const s = io(url, { transports: ['websocket', 'polling'], path: '/socket.io' });
+            socketRef.current = s;
+            s.on('connect', () => {
+              try { s.emit('worker:join', { token, workerId: json.data.workerId || json.data.worker?._id || json.data.worker }); } catch {}
+            });
+            s.on('service:accepted', (payload) => {
+              setAcceptedNotices(prev => {
+                const id = String(payload.id);
+                if (prev.some(x => String(x.id) === id)) return prev; // dedupe
+                const item = { id, name: payload.name, user: payload.user, createdAt: payload.createdAt, imageUrl: payload.imageUrl, description: payload.description, lat: payload.lat, lng: payload.lng };
+                return [item, ...prev].slice(0, 10);
+              });
+            });
+          } catch {}
         }
       } catch {
         // ignore
       } finally { if (!done) setLoading(false); }
     }
     run();
-    return () => { done = true; };
+    return () => { done = true; try { socketRef.current && socketRef.current.disconnect(); } catch {} };
   }, [navigate]);
 
   const logout = () => {
@@ -62,6 +88,20 @@ export default function WorkerDashboard() {
           <div>Address: {workshop.address || '—'}</div>
           <div>Rating: {Number(workshop.ratingAvg || 0).toFixed(1)} ({workshop.reviewsCount || 0})</div>
         </section>
+
+        {acceptedNotices.length > 0 && (
+          <section className="wdash-card">
+            <h3>Recently Accepted Service Requests</h3>
+            <ul style={{ margin: 0, paddingLeft: 18 }}>
+              {acceptedNotices.map(n => (
+                <li key={n.id} style={{ marginBottom: 8 }}>
+                  <strong>{n.name}</strong> — {n.user?.name || n.user?.email || 'User'}
+                  <div style={{ color: '#bbb', fontSize: 12 }}>{new Date(n.createdAt).toLocaleString()}</div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </main>
     </div>
   );

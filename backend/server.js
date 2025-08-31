@@ -44,6 +44,19 @@ app.get("/", (req, res) => {
 io.on('connection', (socket) => {
   // rooms for roles could be added later
   socket.on('join', (room) => socket.join(room));
+
+  // Authenticated join for workers to receive accepted service events
+  socket.on('worker:join', (payload = {}) => {
+    try {
+      const { token, workerId } = payload || {};
+      if (!token || !workerId) return;
+      const jwt = require('jsonwebtoken');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      if (decoded && decoded.role === 'worker' && String(decoded.id) === String(workerId)) {
+        socket.join(`worker:${workerId}`);
+      }
+    } catch {}
+  });
 });
 
 // Routes

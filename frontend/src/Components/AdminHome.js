@@ -49,8 +49,23 @@ export default function AdminHome(){
   }, []);
 
   const onAction = async (id, status) => {
-    await fetch(`${API_BASE}/api/admin/service-requests/${id}/status`, { method: 'PATCH', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ status }) });
+    
     setItems(prev => prev.map(x => x._id === id ? { ...x, status } : x));
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/service-requests/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify({ status })
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const j = await res.json().catch(()=>({ success:true }));
+      if (j && j.success === false) throw new Error(j.message || 'Failed');
+    } catch (e) {
+      // Rollback on error
+      setItems(prev => prev.map(x => x._id === id ? { ...x, status: 'pending' } : x));
+      console.error('[AdminHome] status update failed', e);
+      alert('Failed to update status');
+    }
   };
 
   const toggleOpen = async () => {
@@ -91,8 +106,12 @@ export default function AdminHome(){
               </div>
             </div>
             <div className="ah-actions">
-              <button className="ah-accept" disabled={item.status==='accepted'} onClick={()=> onAction(item._id, 'accepted')}>Accept</button>
-              <button className="ah-reject" disabled={item.status==='rejected'} onClick={()=> onAction(item._id, 'rejected')}>Reject</button>
+              {item.status === 'pending' && (
+                <>
+                  <button className="ah-accept" onClick={()=> onAction(item._id, 'accepted')}>Accept</button>
+                  <button className="ah-reject" onClick={()=> onAction(item._id, 'rejected')}>Reject</button>
+                </>
+              )}
               <span className={`ah-status ah-${item.status}`}>{item.status}</span>
             </div>
           </div>
