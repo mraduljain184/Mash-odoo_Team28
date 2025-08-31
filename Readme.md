@@ -191,4 +191,4 @@ Reviews
 - Maps not loading → ensure `REACT_APP_MAP_API_KEY`
 - No workshops appearing by distance → check geolocation permissions or provide manual location
 - Image upload errors → ensure backend signature endpoint is reachable and Cloudinary credentials are correct
-- 401/403 on protected routes → verify JWT in `localStorage` and role guard.
+- 401/403 on protected routes → verify JWT in `localStorage` and role guards.
