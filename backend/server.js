@@ -1,4 +1,3 @@
-
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -54,6 +53,7 @@ app.use('/api/workshops', require('./Routes/workshop.router.js'));
 app.use('/api/services', require('./Routes/service.router.js'));
 app.use('/api/admin', require('./Routes/admin.router.js'));
 app.use('/api/cloudinary', require('./Routes/cloudinary.router.js'));
+app.use('/api/reviews', require('./Routes/review.router.js'));
 
 
 // Error handler LAST

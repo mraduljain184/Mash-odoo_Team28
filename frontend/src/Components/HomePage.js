@@ -116,7 +116,25 @@ export default function HomePage() {
     }
   };
 
-  // Geocode the typed location and set as active coordinates
+  // Geocode any free-text and apply as location (used by main search bar)
+  const handleMainSearch = async () => {
+    const q = (query || '').trim();
+    if (!q) return; // nothing to search
+    try {
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(q)}&key=${process.env.REACT_APP_MAP_API_KEY}`;
+      const res = await fetch(url);
+      const json = await res.json();
+      const loc = json?.results?.[0]?.geometry?.location;
+      if (loc && typeof loc.lat === 'number' && typeof loc.lng === 'number') {
+        const coords = { lat: loc.lat, lng: loc.lng };
+        setLocationCoords(coords);
+        setUserLocation(coords); // drop marker at searched place
+        setView('map'); // show on map
+        setPage(1);
+      }
+    } catch {}
+  };
+
   const handleLocationSearch = async () => {
     const q = (locationText || '').trim();
     if (!q) return;
@@ -145,6 +163,7 @@ export default function HomePage() {
         setLocationCoords(null); // clear manual override
         setUserLocation(coords);
         setView('map');
+        setPage(1);
       },
       () => {},
       { enableHighAccuracy: true, timeout: 15000 }
@@ -220,11 +239,13 @@ export default function HomePage() {
         <div className="hg-search-capsule">
           <input
             className="hg-search-input"
-            placeholder="Search   Workshop"
+            placeholder="Search   Workshop or Location"
             value={query}
             onChange={e=>setQuery(e.target.value)}
+            onKeyDown={(e)=>{ if(e.key==='Enter') handleMainSearch(); }}
           />
-          <button className="hg-search-btn">🔍</button>
+          <button className="hg-search-btn" onClick={handleMainSearch} title="Search by name or location">🔍</button>
+          <button className="hg-search-btn" onClick={useMyLocation} title="Use my location">📍</button>
         </div>
         <div className="hg-view-toggle">
           <button className={`hg-toggle-btn ${view==='list'?'active':''}`} onClick={()=>handleViewChange('list')} title="List view">☰</button>
@@ -299,15 +320,15 @@ export default function HomePage() {
             <MapSection workshops={filtered} userLocation={userLocation} />
           ) : view === 'list' ? (
             pageItems.map(w => {
-              
               const rating = Number(w.ratingAvg || 0);
               const reviews = Number(w.reviewsCount || 0);
               const fullStars = Math.round(rating);
               const stars = '★'.repeat(Math.max(0, Math.min(5, fullStars))) + '☆'.repeat(Math.max(0, 5 - fullStars));
+              const cover = Array.isArray(w.images) && w.images.length ? w.images[0] : 'https://via.placeholder.com/120';
               return (
                 <section key={w._id} className="hg-card" onClick={() => openDetail(w._id)} style={{ cursor: 'pointer' }}>
                   <div className="hg-avatar">
-                    <img alt="preview" src={(w.images && w.images[0]) || 'https://via.placeholder.com/120'} />
+                    <img alt="preview" src={cover} />
                   </div>
                   <div className="hg-info">
                     <div className="hg-title-row">
@@ -343,9 +364,10 @@ export default function HomePage() {
                 const reviews = Number(w.reviewsCount || 0);
                 const fullStars = Math.round(rating);
                 const stars = '★'.repeat(Math.max(0, Math.min(5, fullStars))) + '☆'.repeat(Math.max(0, 5 - fullStars));
+                const cover = Array.isArray(w.images) && w.images.length ? w.images[0] : 'https://via.placeholder.com/320x180';
                 return (
                   <div key={w._id} className="card-item" onClick={() => openDetail(w._id)} style={{ cursor: 'pointer' }}>
-                    <img alt="preview" src={(w.images && w.images[0]) || 'https://via.placeholder.com/320x180'} />
+                    <img alt="preview" src={cover} />
                     <div className="meta">
                       <div className="title-row">
                         <h3>{w.name}</h3>

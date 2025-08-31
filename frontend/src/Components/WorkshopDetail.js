@@ -22,11 +22,21 @@ function WDMiniMap({ coordinates }) {
   );
 }
 
+function Stars({ value=0 }) {
+  const full = Math.round(Number(value)||0);
+  const stars = '★'.repeat(Math.max(0, Math.min(5, full))) + '☆'.repeat(Math.max(0, 5 - full));
+  return <span className="wd-stars">{stars}</span>;
+}
+
 export default function WorkshopDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [reviews, setReviews] = useState([]);
+  const [myRating, setMyRating] = useState(0);
+  const [myComment, setMyComment] = useState('');
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -46,8 +56,12 @@ export default function WorkshopDetail() {
         const res = await fetch(`${API_BASE}/api/workshops/${id}?${params.toString()}`);
         const json = await res.json();
         if (!cancelled && json.success) setData(json.data);
+
+        // Load reviews
+        const rr = await fetch(`${API_BASE}/api/reviews/workshops/${id}`).then(r=>r.json());
+        if (!cancelled && rr?.success) setReviews(rr.data || []);
       } catch (e) {
-        if (!cancelled) setData(null);
+        if (!cancelled) { setData(null); setReviews([]); }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -56,13 +70,32 @@ export default function WorkshopDetail() {
     return () => { cancelled = true; };
   }, [id]);
 
+  const submitReview = async () => {
+    if (!myRating) { alert('Please select a rating'); return; }
+    setSending(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE}/api/reviews`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ workshopId: id, rating: myRating, comment: myComment })
+      });
+      const j = await res.json();
+      if (!j.success) { alert(j.message || 'Failed to post review'); return; }
+      // reload list and workshop aggregates
+      const rr = await fetch(`${API_BASE}/api/reviews/workshops/${id}`).then(r=>r.json());
+      if (rr?.success) setReviews(rr.data || []);
+      const wk = await fetch(`${API_BASE}/api/workshops/${id}`).then(r=>r.json());
+      if (wk?.success) setData(wk.data);
+      setMyComment('');
+    } finally { setSending(false); }
+  };
+
   if (loading) return <div className="wd-root"><div className="wd-loading">Loading…</div></div>;
   if (!data) return <div className="wd-root"><div className="wd-loading">Not found</div></div>;
 
   const rating = Number(data.ratingAvg || 0);
-  const reviews = Number(data.reviewsCount || 0);
-  const fullStars = Math.round(rating);
-  const stars = '★'.repeat(Math.max(0, Math.min(5, fullStars))) + '☆'.repeat(Math.max(0, 5 - fullStars));
+  const reviewsCount = Number(data.reviewsCount || 0);
 
   return (
     <div className="wd-root">
@@ -84,18 +117,48 @@ export default function WorkshopDetail() {
           <div className="wd-services">
             {(data.services || []).map((s,i)=> (
               <div key={i} className="wd-service">
-                <div className="wd-service-thumb" />
-                <div className="wd-service-name">{s}</div>
+                {typeof s === 'object' && s?.imageUrl ? (
+                  <img className="wd-service-thumb" src={s.imageUrl} alt={s.name || `service-${i}`} />
+                ) : (
+                  <div className="wd-service-thumb" />
+                )}
+                <div className="wd-service-name">{typeof s === 'string' ? s : (s?.name || '')}</div>
               </div>
             ))}
           </div>
 
           <section className="wd-reviews">
             <h3>Customer Reviews</h3>
-            <div className="wd-rating">{stars} <span>{rating>0? rating.toFixed(1):'—'}{reviews>0 && ` (${reviews})`}</span></div>
-            <div className="wd-chat">
-              <input placeholder="Write a message…" />
-              <button>Send</button>
+            <div className="wd-rating"><Stars value={rating} /> <span>{rating>0? rating.toFixed(1):'—'}{reviewsCount>0 && ` (${reviewsCount})`}</span></div>
+
+            <div className="wd-review-input">
+              <select value={myRating} onChange={(e)=> setMyRating(Number(e.target.value))}>
+                <option value={0}>Select rating</option>
+                <option value={1}>★☆☆☆☆</option>
+                <option value={2}>★★☆☆☆</option>
+                <option value={3}>★★★☆☆</option>
+                <option value={4}>★★★★☆</option>
+                <option value={5}>★★★★★</option>
+              </select>
+              <input placeholder="Write a message…" value={myComment} onChange={(e)=> setMyComment(e.target.value)} />
+              <button onClick={submitReview} disabled={sending}>Send</button>
+            </div>
+
+            <div className="wd-review-list">
+              {reviews.map(rv => (
+                <div key={rv._id} className="wd-review-item">
+                  <div className="wd-review-head">
+                    <div className="wd-avatar">👤</div>
+                    <div className="wd-review-meta">
+                      <div className="wd-review-author">{rv.userId?.name || rv.userId?.email || 'User'}</div>
+                      <div className="wd-review-stars"><Stars value={rv.rating} /></div>
+                    </div>
+                    <div className="wd-review-time">{new Date(rv.createdAt).toLocaleString()}</div>
+                  </div>
+                  {rv.comment && <div className="wd-review-text">{rv.comment}</div>}
+                </div>
+              ))}
+              {reviews.length === 0 && <div className="wd-hint">No reviews yet.</div>}
             </div>
           </section>
         </section>

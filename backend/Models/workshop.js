@@ -25,8 +25,11 @@ const WorkshopSchema = new mongoose.Schema({
   },
   ratingAvg: { type: Number, default: 0, min: 0, max: 5 },
   reviewsCount: { type: Number, default: 0, min: 0 },
-  images: [{ type: String }],
-  services: [{ type: String }],
+  images: [{ type: String }], // Workshop gallery images (Cloudinary URLs)
+  services: [{
+    name: { type: String, required: true, trim: true },
+    imageUrl: { type: String, default: '' }, // optional Cloudinary URL per service
+  }],
   createdAt: { type: Date, default: Date.now },
 });
 

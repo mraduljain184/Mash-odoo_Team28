@@ -57,7 +57,6 @@ export default function ServiceTrack() {
       <header className="st-header">
         <button className="st-back" onClick={()=> navigate(-1)}>←</button>
         <div className="st-title">Track Service</div>
-        <div className="st-user">👤</div>
       </header>
 
       <main className="st-main">
@@ -67,7 +66,6 @@ export default function ServiceTrack() {
             <span>{STATUS_STEPS[stepIndex].label}</span>
           </div>
           <div className="st-actions">
-            <button className="st-pill">Invoice</button>
             <button className="st-pill st-ghost">Download report</button>
           </div>
         </div>

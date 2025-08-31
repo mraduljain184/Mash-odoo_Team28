@@ -47,7 +47,6 @@ export default function ServiceNew() {
     try {
       setUploading(true);
       const cfg = await fetchSignature();
-      console.log('[ServiceNew] obtained signature', cfg);
       const fd = new FormData();
       fd.append('file', file);
       fd.append('api_key', cfg.apiKey);
@@ -55,14 +54,11 @@ export default function ServiceNew() {
       fd.append('signature', cfg.signature);
       fd.append('folder', cfg.folder);
       const url = `https://api.cloudinary.com/v1_1/${cfg.cloudName}/image/upload`;
-      console.log('[ServiceNew] uploading to', url);
       const res = await fetch(url, { method: 'POST', body: fd });
       const json = await res.json();
-      console.log('[ServiceNew] Cloudinary response', res.status, json);
       if (!res.ok || json?.error) throw new Error(json?.error?.message || `status ${res.status}`);
       if (json.secure_url) setImageUrl(json.secure_url);
     } catch (err) {
-      console.error('[ServiceNew] upload error', err);
       setUploadErr(String(err?.message || err));
       alert(`Cloudinary upload error: ${String(err?.message || err)}`);
     } finally {
@@ -114,7 +110,6 @@ export default function ServiceNew() {
     <div className="sn-root">
       <header className="sn-header">
         <div className="sn-title">New service</div>
-        <button className="sn-track" type="button">Track Service</button>
       </header>
 
       <form className="sn-form" onSubmit={submit}>
@@ -157,7 +152,7 @@ export default function ServiceNew() {
             <input type="file" accept="image/*" onChange={(e)=> uploadToCloudinary(e.target.files?.[0])} disabled={uploading} />
             {uploading && <div className="sn-hint">Uploading…</div>}
             {uploadErr && <div className="sn-error">{uploadErr}</div>}
-            {imageUrl && <img className="sn-preview" src={imageUrl} alt="preview" />}
+            {imageUrl && <div className="sn-hint">Image uploaded</div>}
           </label>
 
           <label className="sn-field">
@@ -165,7 +160,6 @@ export default function ServiceNew() {
             <input name="issue" placeholder="" onChange={()=>{}} />
           </label>
 
-          <button type="button" className="sn-chat">Chat with agent</button>
           <div className="sn-actions">
             <button type="submit" className="sn-checkout" disabled={submitting || uploading}>{submitting ? 'Processing…' : 'Checkout'}</button>
           </div>

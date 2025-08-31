@@ -30,6 +30,130 @@
 .wd-map-loading { color:#aaa; font-size:14px; }
 .wd-socials a { margin-right:8px; color:#ddd; }
 
+/* Stars: neon glow */
+.wd-stars {
+  color: #f5a623;
+  text-shadow: 0 0 6px rgba(245, 166, 35, 0.6), 0 0 12px rgba(230, 242, 13, 0.25);
+  letter-spacing: 1px;
+}
+
+/* Ratings row */
+.wd-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: linear-gradient(180deg, #1c1c1c, #141414);
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+}
+
+/* Review composer */
+.wd-review-input {
+  display: grid;
+  grid-template-columns: 150px 1fr auto;
+  gap: 10px;
+  margin: 10px 0 14px;
+}
+.wd-review-input select,
+.wd-review-input input {
+  height: 40px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #333;
+  background: #111;
+  color: #eee;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.wd-review-input input::placeholder { color:#777; }
+.wd-review-input select:focus,
+.wd-review-input input:focus {
+  border-color: #e7f20c;
+  box-shadow: 0 0 0 3px rgba(231, 242, 12, 0.15);
+}
+.wd-review-input button {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 10px;
+  background: #e7f20c;
+  color: #111;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.06s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.wd-review-input button:hover { box-shadow: 0 0 0 3px rgba(231, 242, 12, 0.15); }
+.wd-review-input button:active { transform: translateY(1px); }
+.wd-review-input button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Review list */
+.wd-review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.wd-review-item {
+  background: #151515;
+  border: 1px solid #262626;
+  border-radius: 14px;
+  padding: 12px;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.wd-review-item:hover {
+  border-color: #3a3a3a;
+  box-shadow: 0 0 0 2px rgba(231, 242, 12, 0.06) inset;
+}
+.wd-review-head {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+.wd-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(100% 100% at 0% 0%, #2e2e2e 0%, #1a1a1a 100%);
+  border: 2px solid #2c2c2c;
+}
+.wd-review-meta { display:flex; flex-direction:column; }
+.wd-review-author { font-weight: 700; color:#e9e9e9; }
+.wd-review-stars { margin-top: 2px; }
+.wd-review-time { color:#8a8a8a; font-size:12px; }
+.wd-review-text { margin-top: 10px; color:#ddd; line-height:1.55; }
+
+/* Reviews card container polish */
+.wd-reviews {
+  box-shadow: 0 8px 30px rgba(0,0,0,0.35), 0 0 0 2px #0a0a0a inset;
+  background: linear-gradient(180deg, #141414 0%, #121212 100%);
+}
+
+/* Primary CTA polish */
+.wd-book {
+  box-shadow: 0 6px 22px rgba(231, 242, 12, 0.18);
+}
+.wd-book:hover { filter: brightness(0.95); }
+
+/* Right cards hover */
+.wd-location, .wd-owner, .wd-share {
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.wd-location:hover, .wd-owner:hover, .wd-share:hover {
+  border-color:#343434;
+  box-shadow: 0 0 0 2px rgba(231, 242, 12, 0.05) inset;
+}
+
+/* Map corner rounding refinement */
+.wd-mini-map > div { border-radius: 12px; overflow: hidden; }
+
+/* Responsive tweaks for composer */
+@media (max-width: 720px) {
+  .wd-review-input { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 980px) {
   .wd-main { grid-template-columns: 1fr; }
   .wd-right { position:static; }
